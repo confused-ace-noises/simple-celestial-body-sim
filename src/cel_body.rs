@@ -1,102 +1,114 @@
-use std::f32::consts::PI;
+use std::{cell::RefCell, f32::consts::PI, rc::Rc};
 
 use bevy::{prelude::*, render::mesh::SphereMeshBuilder};
 
-use crate::sci_float::SciFloat;
+use crate::{sci_float::SciFloat, JsonData};
 
-#[derive(Debug, Component, Clone)]
-pub struct CelBody {
-    pub position: Vec3,
-    pub radius: SciFloat,
-    pub color: Color,
-    pub light: bool,
-    pub velocity: Vec3,
-    pub acceleration: Vec3,
-    pub mass: SciFloat,
-    pub density: SciFloat // kg/m³
+#[derive(Component, Debug)]
+pub struct CelBody;
+
+#[derive(Component, Debug)]
+pub struct Velocity(pub Vec3);
+
+#[derive(Component, Debug)]
+pub struct Acceleration(pub Vec3);
+
+#[derive(Component, Debug)]
+pub struct Mass(pub f32);
+
+#[derive(Component, Debug)]
+pub struct Radius(pub f32);
+
+#[derive(Component, Debug)]
+pub struct Color(pub bevy::color::Color);
+
+#[derive(Component, Debug)]
+pub struct Light(pub bool);
+
+#[derive(Component, Debug)]
+pub struct UpdatePosition;
+
+#[derive(Debug, Bundle)]
+pub struct CelBodyDataBundle {
+    velocity: Velocity,
+    acceleration: Acceleration,
+    mass: Mass,
+    radius: Radius,
+    color: Color,
+    light: Light,
 }
-impl CelBody {
-    pub fn new(position: Vec3, radius: SciFloat, color: Color, light: bool, velocity: Vec3, acceleration: Vec3, mass: SciFloat) -> CelBody {
-        CelBody {
-            position: position,
-            radius,
-            color,
-            light,
-            velocity: velocity,
-            acceleration: acceleration,
-            mass,
-            density: Into::<SciFloat>::into(4.0/3.0)* PI.into() * radius*radius*radius,
-        }
-    }
 
-    pub fn calc_movement(&mut self, time: &Res<Time>, transform: &mut Transform) {
-        let delta_time = time.delta_secs();
-
-        self.velocity += self.acceleration * delta_time;
-
-        transform.translation += self.velocity * delta_time;
-        self.position += self.velocity * delta_time;
-    }
+#[derive(Debug, Bundle)]
+pub struct CelBodyBundle<M: Material> {
+    cel_body: CelBody,
+    update_pos: UpdatePosition,
+    cel_body_data: CelBodyDataBundle,
+    mesh_3d: Mesh3d,
+    mesh_material_3d: MeshMaterial3d<M>,
+    transform: Transform,
 }
 
 pub fn init_cel_bodies(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut material: ResMut<Assets<StandardMaterial>>,
-    bodies_query: Query<(Entity, &CelBody), With<CelBody>>,
+    data: Res<JsonData>,
 ) {
-    for (entity, body) in bodies_query.iter() {
-        let mut handle = commands.entity(entity);
+    for builder in data.0.iter() {
+        let color = bevy::prelude::Color::srgba_u8(
+            builder.color[0],
+            builder.color[1],
+            builder.color[2],
+            builder.color[3],
+        );
 
-        if !body.light {
-            handle.insert((
-                Mesh3d(meshes.add(SphereMeshBuilder::new(
-                    body.radius.into(),
+        let entity = commands
+            .spawn(CelBodyBundle {
+                cel_body: CelBody,
+                update_pos: UpdatePosition,
+                cel_body_data: CelBodyDataBundle {
+                    velocity: Velocity(Vec3::from_array(builder.velocity)),
+                    acceleration: Acceleration(Vec3::from_array(builder.acceleration)),
+                    mass: Mass(builder.mass),
+                    radius: Radius(builder.radius),
+                    color: Color(color),
+                    light: Light(builder.light),
+                },
+                mesh_3d: Mesh3d(meshes.add(SphereMeshBuilder::new(
+                    builder.radius.into(),
                     bevy::render::mesh::SphereKind::Ico { subdivisions: 15 },
                 ))),
-                MeshMaterial3d(material.add(body.color)),
-                Transform::from_xyz(body.position.x, body.position.y, body.position.z),
-            ));
-        } else {
-            handle.insert((
-                Mesh3d(meshes.add(SphereMeshBuilder::new(
-                    body.radius.into(),
-                    bevy::render::mesh::SphereKind::Ico { subdivisions: 15 },
-                ))),
-                MeshMaterial3d(material.add(StandardMaterial {
-                    base_color: body.color,
-                    emissive: body.color.into(),
+                mesh_material_3d: MeshMaterial3d(material.add(StandardMaterial {
+                    base_color: color,
+                    emissive: if builder.light { color.into() } else { bevy::color::Color::srgba_u8(0, 0, 0, 0).into() },
                     ..default()
                 })),
-                Transform::from_xyz(body.position.x, body.position.y, body.position.z),
-                //GlobalTransform::default(),
-            ));
+                transform: Transform::from_xyz(
+                    builder.position[0],
+                    builder.position[1],
+                    builder.position[2],
+                ),
+            })
+            .id();
 
+        if builder.light {
             commands.entity(entity).with_child(PointLight {
                 shadows_enabled: true,
                 intensity: 30000000.0,
                 range: 30.0,
-                // radius: 10000000.0,
-                color: body.color,
+                color,
                 ..default()
             });
         }
     }
 }
 
-// handle.insert((
-//     Mesh3d(meshes.add(SphereMeshBuilder::new(
-//         body.radius,
-//         bevy::render::mesh::SphereKind::Ico { subdivisions: 15 },
-//     ))),
-//     MeshMaterial3d(material.add(body.color)),
-//     Transform::from_xyz(body.position.x, body.position.y, body.position.z)
-// ));
+//
+// pub fn calc_movement(&mut self, time: &Res<Time>, transform: &mut Transform) {
+//     let delta_time = time.delta_secs();
 
-// if body.light {
-//     handle.insert(PointLight {
-//         shadows_enabled: true,
-//         intensity: 100000000.0,
-//         ..default()
-//     });
+//     self.velocity += self.acceleration * delta_time;
+
+//     transform.translation += self.velocity * delta_time;
+//     self.position += self.velocity * delta_time;
 // }
