@@ -1,10 +1,10 @@
-use bevy::{color::Color, math::Vec3};
 use clap::Parser;
 use serde::Deserialize;
 
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct BodyBuilder {
+    pub name: String,
     pub position: [f32; 3],
     pub radius: f32,
     pub color: [u8; 4],

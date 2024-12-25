@@ -1,8 +1,5 @@
-use std::{cell::RefCell, f32::consts::PI, rc::Rc};
-
+use crate::JsonData;
 use bevy::{prelude::*, render::mesh::SphereMeshBuilder};
-
-use crate::{sci_float::SciFloat, JsonData};
 
 #[derive(Component, Debug)]
 pub struct CelBody;
@@ -27,6 +24,9 @@ pub struct Light(pub bool);
 
 #[derive(Component, Debug)]
 pub struct UpdatePosition;
+
+#[derive(Component, Debug)]
+pub struct NameTag(pub String);
 
 #[derive(Debug, Bundle)]
 pub struct CelBodyDataBundle {
@@ -80,7 +80,11 @@ pub fn init_cel_bodies(
                 ))),
                 mesh_material_3d: MeshMaterial3d(material.add(StandardMaterial {
                     base_color: color,
-                    emissive: if builder.light { color.into() } else { bevy::color::Color::srgba_u8(0, 0, 0, 0).into() },
+                    emissive: if builder.light {
+                        color.into()
+                    } else {
+                        bevy::color::Color::srgba_u8(0, 0, 0, 0).into()
+                    },
                     ..default()
                 })),
                 transform: Transform::from_xyz(
@@ -102,13 +106,3 @@ pub fn init_cel_bodies(
         }
     }
 }
-
-//
-// pub fn calc_movement(&mut self, time: &Res<Time>, transform: &mut Transform) {
-//     let delta_time = time.delta_secs();
-
-//     self.velocity += self.acceleration * delta_time;
-
-//     transform.translation += self.velocity * delta_time;
-//     self.position += self.velocity * delta_time;
-// }

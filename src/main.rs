@@ -2,11 +2,11 @@ use std::fs;
 
 use bevy::core_pipeline::Skybox;
 use bevy::prelude::*;
-use celestial_body_sim::cel_body::{init_cel_bodies, Acceleration, Mass, UpdatePosition, Velocity};
+use celestial_body_sim::cel_body::{init_cel_bodies, Acceleration, Mass, NameTag, UpdatePosition, Velocity};
 use celestial_body_sim::cli::{BodyBuilder, Cli};
 use celestial_body_sim::{camera::*, JsonData, G};
 use clap::Parser;
-
+use bevy_mod_billboard::prelude::*;
 
 fn main() {
     let cli = Cli::parse();
@@ -15,8 +15,7 @@ fn main() {
 
     App::new()
         .insert_resource(JsonData(bodybuilders))
-        .add_plugins(DefaultPlugins)
-        .add_plugins(CameraControllerPlugin)
+        .add_plugins((DefaultPlugins, BillboardPlugin, CameraControllerPlugin))
         .add_systems(
             Startup,
             (
@@ -24,26 +23,10 @@ fn main() {
                 setup_camera.after(init_cel_bodies),
             ),
         )
-        .add_systems(Update, (gravity, update_position.after(gravity)))
+        .add_systems(Update, (gravity, update_position.after(gravity)
+        ))
         .run();
 }
-
-// fn setup_bodies(
-//     mut commands: Commands,
-//     json_path: Res<JsonDataPath>
-// ) {
-//     let x = fs::read_to_string(json_path.0.clone()).expect("failed to read path");
-//     let json: Vec<BodyBuilder> = serde_json::from_str(&x).expect("failed to parse json");
-
-//     let bodies = json.into_iter().map(|x| {
-//         x.to_cel_body()
-//     }).collect::<Vec<_>>();
-    
-
-//     for cel_body in bodies.iter() {
-//         commands.spawn(cel_body.clone());
-//     }
-// }
 
 fn setup_camera(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((
@@ -118,3 +101,11 @@ pub fn get_bodybuilders(path: String) -> Vec<BodyBuilder> {
 
     json
 }
+
+// fn text(
+//     mut commands: Commands,
+// ) {
+//     commands.spawn((
+//         Text
+//     ))
+// }

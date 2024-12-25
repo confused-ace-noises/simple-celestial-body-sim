@@ -1,7 +1,5 @@
 use std::{fmt::Display, ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign}};
 
-use bevy::math::FloatPow;
-
 #[derive(Debug, Clone, Copy)]
 pub struct SciFloat {
     mantissa: f32,
@@ -197,22 +195,6 @@ impl From<f32> for SciFloat {
 impl From<SciFloat> for f32 {
     fn from(value: SciFloat) -> Self {
         value.mantissa.powi(value.exp)
-    }
-}
-
-impl FloatPow for SciFloat {
-    fn squared(self) -> Self {
-        Self {
-            mantissa: self.mantissa,
-            exp: self.exp*2
-        }
-    }
-
-    fn cubed(self) -> Self {
-        Self {
-            mantissa: self.mantissa,
-            exp: self.exp*3
-        }
     }
 }
 

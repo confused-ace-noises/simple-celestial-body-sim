@@ -1,7 +1,8 @@
 [
     {
+        "name": "hello",
         "position": [0.0, 0.0, 0.0],
-        "radius": 5.0,
+        "radius": 1.0,
         "color": [255, 0, 0, 255],
         "light": true,
         "velocity": [0.0, 0.0, 0.0],
@@ -9,8 +10,9 @@
         "mass": 10000000000.0
     },
     {
+        "name": "idk, 2",
         "position": [8.0, 8.0, 1.0],
-        "radius": 7.0,
+        "radius": 1.0,
         "color": [0, 255, 0, 255],
         "light": false,
         "velocity": [0.0, 0.0, 0.0],
