@@ -5,8 +5,9 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.15.0", features = ["exr", "webp"] }
-bevy_sprite3d = "*"
 clap = { version = "4.5.23", features = ["derive"] }
 serde = "1.0.215"
 serde_json = "1.0.133"
-bevy_mod_billboard = { git = "https://github.com/voximity/bevy_mod_billboard.git", branch="migrate-0.15" }
+
+[profile.release]
+opt-level = 3
