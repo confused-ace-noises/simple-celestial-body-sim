@@ -46,7 +46,7 @@ As long as space isn't pressed, movement of the bodies will stay still. Once spa
 
 ## The simulator in action
 
-gif_here
+![](https://github.com/confused-ace-noises/simple-celestial-body-sim/blob/master/assets/celestial_body_sim.gif?raw=true)
 
 this orbit was achieved with the following JSON config:
 
